@@ -19,6 +19,10 @@ step 2: for all samples: randomly choose a label with probability genrated by ea
 step 3: repeat step 2 until converged
 '''
 
+'''
+result rocord: can not change the initial labels in first iteration. This mainly because the strong ability of neural network to find data's common feature
+'''
+
 
 def createNewModel(wordEmbeddingVocab, vocabSize, maxlen):
     model = Sequential()
@@ -85,7 +89,7 @@ def saveLabels(labels,file):
         o.write(str(i) + '\n')
     o.close()
 
-def sampling(file='',cNumber=30):
+def sampling(file='',cNumber=5):
     #prepare data from texts
     print 'prepare data & labels ...'
     data, toknizer, maxlen = dataText2Seq()
@@ -131,6 +135,7 @@ def sampling(file='',cNumber=30):
                 params=[]
                 for i in models:
                     params.extend(models[i].predict(data[i])[0])
+                print params
                 l=np.argmax(params)
                 if l!=labels[i]:
                     change+=1
@@ -148,5 +153,5 @@ def sampling(file='',cNumber=30):
 
 
 
-labels=sampling(cNumber=30)
+labels=sampling(cNumber=3)
 saveLabels(labels,'../output/predict_labels')
