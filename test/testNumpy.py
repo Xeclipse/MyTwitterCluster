@@ -14,7 +14,7 @@ plt.bar(left=[0.1+i*1.1 for i in range(c.values().__len__())],height=c.values())
 plt.show()
 '''
 
-
+'''
 def processLabels(labels, val):
     tmplabel=labels[:]
     for i,v in enumerate(tmplabel):
@@ -25,3 +25,8 @@ def processLabels(labels, val):
 labels=[1,2,2,2,3,4,5,6,1]
 print processLabels(labels,2)
 print labels
+'''
+
+
+a=[0.48,0.56,0.22,0.33,0.14]
+print np.random.multinomial(1,pvals=[i/sum(a) for i in a])

@@ -90,7 +90,7 @@ def saveLabels(labels,file):
         o.write(str(i) + '\n')
     o.close()
 
-def sampling(file='',cNumber=5):
+def sampling(file='',cNumber=5, saveModel= False):
     #prepare data from texts
     print 'prepare data & labels ...'
     data, toknizer, maxlen = dataText2Seq()
@@ -138,8 +138,9 @@ def sampling(file='',cNumber=5):
             predicts.append(models[m].predict(data))
         predicts=np.transpose(predicts)[0]
         print np.shape(predicts)
-        for i,v in enumerate(predicts):
-            l=np.argmax(np.random.multinomial(n=1,pvals=v/sum(v)))
+        for (i,v) in enumerate(predicts):
+            s=sum(v)
+            l=np.argmax(np.random.multinomial(n=1,pvals=[k/s for k in v]))
             if labels[i]!=l:
                 change+=1
                 labels[i]=l
@@ -147,11 +148,14 @@ def sampling(file='',cNumber=5):
         saveLabels(labels, '../output/labels' + str(count))
         print '------C-H-A-N-G-E---------',
         print change
+        f=open('../output/changes','a')
+        f.write(str(change)+'\n')
+        f.close()
         if change<coverage: break
-        updateNeuralNets(models,data,labels,batch=5, epoch=5)
-
-    for i in models:
-        models[i].save(filepath=('../output/model'+str(i)),overwrite=True)
+        updateNeuralNets(models,data,labels,batch=500, epoch=2)
+    if saveModel==True:
+        for i in models:
+            models[i].save(filepath=('../output/model'+str(i)),overwrite=True)
     return labels
 
 
