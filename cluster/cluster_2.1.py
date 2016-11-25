@@ -105,8 +105,8 @@ def sampling(file='',cNumber=5, saveModel= False):
 
 
     #initial labels, randomly assignment
-    #labels = [int(i) for i in np.random.uniform(1, cNumber, data.__len__())]
-    labels = [-1]*data.__len__()
+    labels = [int(i) for i in np.random.uniform(1, cNumber, data.__len__())]
+    #labels = [-1]*data.__len__()
 
 
     print 'initialize models:'
@@ -141,6 +141,7 @@ def sampling(file='',cNumber=5, saveModel= False):
         for (i,v) in enumerate(predicts):
             s=sum(v)
             l=np.argmax(np.random.multinomial(n=1,pvals=[k/s for k in v]))
+            #l = np.argmax(v)
             if labels[i]!=l:
                 change+=1
                 labels[i]=l
@@ -152,7 +153,7 @@ def sampling(file='',cNumber=5, saveModel= False):
         f.write(str(change)+'\n')
         f.close()
         if change<coverage: break
-        updateNeuralNets(models,data,labels,batch=500, epoch=2)
+        updateNeuralNets(models,data,labels,batch=5, epoch=10)
     if saveModel==True:
         for i in models:
             models[i].save(filepath=('../output/model'+str(i)),overwrite=True)
