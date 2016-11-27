@@ -34,12 +34,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="cluster_2.1.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="cluster_2.1.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cluster/cluster_2.1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="826">
-              <caret line="164" column="45" selection-start-line="164" selection-start-column="45" selection-end-line="164" selection-end-column="45" />
+            <state relative-caret-position="124">
+              <caret line="125" column="21" selection-start-line="125" selection-start-column="21" selection-end-line="125" selection-end-column="21" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="embeddingPreTrain.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/preprocess/embeddingPreTrain.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="556">
+              <caret line="86" column="28" selection-start-line="86" selection-start-column="28" selection-end-line="86" selection-end-column="28" />
+              <folding>
+                <element signature="e#15#57#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -99,6 +111,7 @@
         <option value="$PROJECT_DIR$/output/changes" />
         <option value="$PROJECT_DIR$/test/testLSTM.py" />
         <option value="$PROJECT_DIR$/cluster/cluster_2.1.py" />
+        <option value="$PROJECT_DIR$/preprocess/embeddingPreTrain.py" />
       </list>
     </option>
   </component>
@@ -162,6 +175,20 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="resource" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MyTwitterCluster" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MyTwitterCluster" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="preprocess" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -567,13 +594,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/preprocess/test">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="10" selection-start-line="0" selection-start-column="10" selection-end-line="0" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/preprocess/RawToVocabulary.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="705">
@@ -759,9 +779,19 @@
     <entry file="file://$PROJECT_DIR$/output/changes" />
     <entry file="file://$PROJECT_DIR$/cluster/cluster_2.1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="826">
-          <caret line="164" column="45" selection-start-line="164" selection-start-column="45" selection-end-line="164" selection-end-column="45" />
+        <state relative-caret-position="124">
+          <caret line="125" column="21" selection-start-line="125" selection-start-column="21" selection-end-line="125" selection-end-column="21" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/preprocess/embeddingPreTrain.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="556">
+          <caret line="86" column="28" selection-start-line="86" selection-start-column="28" selection-end-line="86" selection-end-column="28" />
+          <folding>
+            <element signature="e#15#57#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
