@@ -9,46 +9,48 @@ import keras.preprocessing.sequence as seq
 from keras import backend as K
 
 
+corpusFile="../resource/pure_tweets_fsd"
+labelsFile='../resource/labels'
 
-
-
-file=open("../preprocess/test")
+file=open(corpusFile)
 text=file.readlines()
-toknizer=prep.Tokenizer()
+toknizer=prep.Tokenizer()#nb_words=2000
 toknizer.fit_on_texts(texts=text)
 data=toknizer.texts_to_sequences(text)
 data=np.asanyarray(data)
 maxlen=[i.__len__() for i in data]
 maxlen=maxlen[np.argmax(maxlen)]
-
-print toknizer.word_index
-print toknizer.word_counts
-print toknizer.word_index.__len__()
-print maxlen
+#print toknizer.word_index
+#print toknizer.word_counts
+vocabSize = toknizer.word_index.__len__()+2
 data=seq.pad_sequences(sequences=data,padding='pre')
 file.close()
 
-file=open('../preprocess/label')
+
+
+file=open(labelsFile)
 labels=[[float(k) for k in i] for i in file.readlines()]
 
 X_train=data
 Y_train=labels
 
+
 model = Sequential()
-model.add(Embedding(input_dim=247, output_dim=64))
-model.add(LSTM(output_dim=64, input_length=maxlen,activation='tanh', inner_activation='hard_sigmoid',return_sequences=False,name='lstm'))
+model.add(Embedding(input_dim=vocabSize, output_dim=100, mask_zero= True))
+model.add(LSTM(output_dim=100, input_length=maxlen,activation='tanh', inner_activation='hard_sigmoid',return_sequences=False,name='lstm'))
 model.add(Dense(labels[0].__len__()))
 model.add(Activation('sigmoid'))
 
 model.compile(loss='mse',
               optimizer='rmsprop',
-              metrics=['categorical_accuracy'])
+              metrics=['mse'])
 
 model.fit(X_train, Y_train, batch_size=1, nb_epoch=60)
 
+
+
 get_lstm_layer_output = K.function([model.layers[0].input],
                                   [model.get_layer(name='lstm').output])
-
 
 
 lstmout=get_lstm_layer_output([X_train])[0]
@@ -56,5 +58,6 @@ file=open('output','w')
 for i in lstmout:
     file.write(str(i)+'\n')
 file.close()
+
 
 
