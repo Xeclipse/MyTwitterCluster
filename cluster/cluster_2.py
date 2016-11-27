@@ -9,6 +9,7 @@ import keras.preprocessing.sequence as seq
 from keras import backend as K
 import  sklearn.cluster as clu
 from matplotlib import pyplot as plt
+from keras.utils.visualize_util import plot
 
 
 
@@ -19,17 +20,13 @@ step 2: for all samples: randomly choose a label with probability genrated by ea
 step 3: repeat step 2 until converged
 '''
 
-'''
-result rocord: can not change the initial labels in first iteration. This mainly because the strong ability of neural network to find data's common feature
-'''
-
 
 def createNewModel(wordEmbeddingVocab, vocabSize, maxlen):
     model = Sequential()
     model.add(Embedding(input_dim=vocabSize + 1, output_dim=256,weights=wordEmbeddingVocab))
     model.add(LSTM(output_dim=500, input_length=maxlen, activation='tanh', inner_activation='hard_sigmoid',
                    return_sequences=False, name='lstm'))
-    model.add(Dense(1, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='mse',
                   optimizer='rmsprop',
                   metrics=['mse'])
@@ -43,7 +40,7 @@ def trainModel(model, data, labels):
 change all index in labels with 1 and others' with 0
 '''
 def processLabels(labels, val):
-    tmplabel=labels[:]
+    tmplabel=labels
     for i,v in enumerate(tmplabel):
         if v==val: tmplabel[i]=1
         else: tmplabel[i]=0
@@ -64,11 +61,9 @@ def getWordEmbedding(model):
     return False
 
 
-def updateNeuralNets(models, data, labels,batch=5,epoch=10):
+def updateNeuralNets(models, data, labels,batch=5,epoch=60):
     for i in models:
         tmpLabel=processLabels(labels=labels,val=i)
-        print 'Model',
-        print i
         models[i].fit(data,labels,batch_size=batch,nb_epoch=epoch)
 
 def dataText2Seq(fileName="../resource/pure_tweets_fsd"):
@@ -83,13 +78,8 @@ def dataText2Seq(fileName="../resource/pure_tweets_fsd"):
     maxlen = [i.__len__() for i in data]
     maxlen = maxlen[np.argmax(maxlen)]
     return data,toknizer,maxlen
-def saveLabels(labels,file):
-    o = open(file,'w')
-    for i in labels:
-        o.write(str(i) + '\n')
-    o.close()
 
-def sampling(file='',cNumber=5):
+def sampling(file='',cNumber=30):
     #prepare data from texts
     print 'prepare data & labels ...'
     data, toknizer, maxlen = dataText2Seq()
@@ -113,45 +103,38 @@ def sampling(file='',cNumber=5):
         print 'model',
         print i
         models[i]=createNewModel(wordEmbeddingVocab=None,vocabSize=vocabSize,maxlen=maxlen)
-    updateNeuralNets(models, data, labels,batch=5,epoch=10)
-    coverage=100
+    updateNeuralNets(models, data, labels)
+    coverage=2000
     batch = 2499
 
 
     print 'start sampling'
-    change=10000
-    count=0
     while change>coverage:
         #sampling 1 iter
         change=0
-        count+=1
         print 'change\t',
         print change
-        start = 0
         while start<nSample:
+            start=0
             end=min(nSample,start+batch)
             for i in range(start,end):
                 # Randomly Assign Tweet i
                 params=[]
                 for i in models:
                     params.extend(models[i].predict(data[i])[0])
-                print params
-                l=np.argmax(params)
+                l=np.argmax(np.random.multinomial(1,params,1)[0])
                 if l!=labels[i]:
                     change+=1
                     labels[i]=l
-            saveLabels(labels, '../output/labels' + str(count))
-            print '------C-H-A-N-G-E---------',
-            print change
-            if change<coverage: break
-            updateNeuralNets(models,data,labels,batch=5, epoch=15)
+            updateNeuralNets(models,data,labels,batch=100, epoch=1)
             start=end
-
-    for i in models:
-        models[i].save(filepath=('../output/model'+str(i)),overwrite=True)
     return labels
 
 
 
-labels=sampling(cNumber=3)
-saveLabels(labels,'../output/predict_labels')
+labels=sampling()
+o=open('../output/labels','w')
+for i in labels:
+    o.write(str(i)+'\n')
+    o.close()
+o.close()
