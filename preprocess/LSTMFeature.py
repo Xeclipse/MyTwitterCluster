@@ -9,8 +9,8 @@ import keras.preprocessing.sequence as seq
 from keras import backend as K
 
 
-corpusFile="../resource/pure_tweets_fsd"
-labelsFile='../resource/labels'
+corpusFile="../resource/blog/blogText"
+labelsFile='../resource/blog/blogLabels'
 
 file=open(corpusFile)
 text=file.readlines()
@@ -29,7 +29,7 @@ file.close()
 
 
 file=open(labelsFile)
-labels=[[float(k) for k in i] for i in file.readlines()]
+labels=[[float(k) for k in i.strip().split('\t')] for i in file.readlines()]
 
 X_train=data
 Y_train=labels
@@ -45,7 +45,7 @@ model.compile(loss='mse',
               optimizer='rmsprop',
               metrics=['mse'])
 
-model.fit(X_train, Y_train, batch_size=1, nb_epoch=60)
+model.fit(X_train, Y_train, batch_size=20, nb_epoch=50)
 
 
 
@@ -56,7 +56,8 @@ get_lstm_layer_output = K.function([model.layers[0].input],
 lstmout=get_lstm_layer_output([X_train])[0]
 file=open('output','w')
 for i in lstmout:
-    file.write(str(i)+'\n')
+    tmp=str(i).replace('\n','').replace('[','').replace(']','').strip()
+    file.write(tmp+'\n')
 file.close()
 
 
