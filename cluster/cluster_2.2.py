@@ -67,7 +67,6 @@ def getWordEmbedding(model):
 def updateNeuralNets(models, data, labels,batch=5,epoch=10):
     for i in models:
         tmpLabel=processLabels(labels=labels,val=i)
-
         print 'Model',
         print i
         models[i].fit(data,tmpLabel,batch_size=batch,nb_epoch=epoch)
@@ -106,54 +105,23 @@ def sampling(file='',cNumber=5, saveModel= False):
 
     #initial labels, randomly assignment
     #labels = [int(i) for i in np.random.uniform(1, cNumber, data.__len__())]
-    labels = [-1]*data.__len__()
 
 
-    print 'initialize models:'
+    print 'initialize model0:'
     #initial models
     models={}
-    for i in range(cNumber):
-        print 'model',
-        print i
-        models[i]=createNewModel(wordEmbeddingVocab=None,vocabSize=vocabSize,maxlen=maxlen)
+    modelCount=1
     '''
     updateNeuralNets(models, data, labels,batch=5,epoch=10)
     '''
-    coverage=100
-    batch = data.__len__()
-
+    models[modelCount]=createNewModel(wordEmbeddingVocab=None, vocabSize=vocabSize, maxlen=maxlen)
+    modelCount+=1
+    labels=[1]
+    X=[data[0]]
+    Y=[1]
+    models[1].fit(X, y, batch_size=1, nb_epoch=10)
 
     print 'start sampling'
-    change=10000
-    count=0
-    while change>coverage:
-        #sampling 1 iter
-        change=0
-        count+=1
-        print 'change\t',
-        print change
-
-        predicts=[]
-        for m in models:
-            predicts.append(models[m].predict(data))
-        predicts=np.transpose(predicts)[0]
-        print np.shape(predicts)
-        for (i,v) in enumerate(predicts):
-            s=sum(v)
-            l=np.argmax(np.random.multinomial(n=1,pvals=[k/s for k in v]))
-            #l = np.argmax(v)
-            if labels[i]!=l:
-                change+=1
-                labels[i]=l
-
-        saveLabels(labels, '../output/labels' + str(count))
-        print '------C-H-A-N-G-E---------',
-        print change
-        f=open('../output/changes','a')
-        f.write(str(change)+'\n')
-        f.close()
-        if change<coverage: break
-        updateNeuralNets(models,data,labels,batch=5, epoch=10)
     if saveModel==True:
         for i in models:
             models[i].save(filepath=('../output/model'+str(i)),overwrite=True)
@@ -161,5 +129,13 @@ def sampling(file='',cNumber=5, saveModel= False):
 
 
 
-labels=sampling(cNumber=30)
-saveLabels(labels,'../output/predict_labels')
+data, toknizer, maxlen = dataText2Seq()
+vocabSize = toknizer.word_index.__len__()+1
+
+#model=createNewModel(wordEmbeddingVocab=None, vocabSize=vocabSize, maxlen=maxlen)
+X=[data[0]]
+Y=[1]
+print X
+print data
+#model.fit(X,Y, batch_size=1, nb_epoch=10)
+#print model.predict([data[1]])
