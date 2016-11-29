@@ -9,7 +9,7 @@ import keras.preprocessing.sequence as seq
 from keras import backend as K
 import  sklearn.cluster as clu
 from matplotlib import pyplot as plt
-
+from collections import Counter
 
 
 '''
@@ -20,14 +20,19 @@ step 3: repeat step 2 until converged
 '''
 
 '''
-result rocord: can not change the initial labels in first iteration. This mainly because the strong ability of neural network to find data's common feature
+without pretrain embedding:
+    result rocord: can not change the initial labels in first iteration. This mainly because the strong ability of neural network to find data's common feature
+                   still, all the tweets will cluster to a few clusters, starnge.
+with pretrain embedding:
+    result record: still can not solve the problem
+
 '''
 
 
 def createNewModel(wordEmbeddingVocab, vocabSize, maxlen):
     model = Sequential()
-    model.add(Embedding(input_dim=vocabSize + 1, output_dim=256,weights=wordEmbeddingVocab))
-    model.add(LSTM(output_dim=500, input_length=maxlen, activation='tanh', inner_activation='hard_sigmoid',
+    model.add(Embedding(input_dim=vocabSize + 2, output_dim=50,weights=wordEmbeddingVocab,trainable=False))
+    model.add(LSTM(output_dim=100, input_length=maxlen, activation='tanh', inner_activation='hard_sigmoid',
                    return_sequences=False, name='lstm'))
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='mse',
@@ -72,9 +77,9 @@ def updateNeuralNets(models, data, labels,batch=5,epoch=10):
         print i
         models[i].fit(data,tmpLabel,batch_size=batch,nb_epoch=epoch)
 
-def dataText2Seq(fileName="../resource/pure_tweets_fsd"):
+def dataText2Seq(fileName="../resource/fsd/pure_tweets_fsd"):
     file = open(fileName)
-    text = file.readlines()
+    text = [i.strip() for i in file.readlines()]
     toknizer = prep.Tokenizer()
     toknizer.fit_on_texts(texts=text)
     data = toknizer.texts_to_sequences(texts=text)
@@ -90,11 +95,20 @@ def saveLabels(labels,file):
         o.write(str(i) + '\n')
     o.close()
 
+def readEmbedding(file='../resource/fsd/FSD_LSTM_embedding'):
+    f=open(file)
+    embedding=[]
+    for i in f .readlines():
+        tmp=[float(k) for k in i.strip().split()]
+        embedding.append(tmp)
+    return embedding
+
+
 def sampling(file='',cNumber=5, saveModel= False):
     #prepare data from texts
     print 'prepare data & labels ...'
     data, toknizer, maxlen = dataText2Seq()
-    vocabSize = toknizer.word_index.__len__()+1
+    vocabSize = toknizer.word_index.__len__()
     nSample = data.__len__()
     '''
     #tokenizer information
@@ -102,6 +116,7 @@ def sampling(file='',cNumber=5, saveModel= False):
     print toknizer.word_counts
     print maxlen
     '''
+    weights=np.asanyarray([readEmbedding()])
 
 
     #initial labels, randomly assignment
@@ -115,13 +130,12 @@ def sampling(file='',cNumber=5, saveModel= False):
     for i in range(cNumber):
         print 'model',
         print i
-        models[i]=createNewModel(wordEmbeddingVocab=None,vocabSize=vocabSize,maxlen=maxlen)
+        models[i]=createNewModel(wordEmbeddingVocab=weights,vocabSize=vocabSize,maxlen=maxlen)
     '''
     updateNeuralNets(models, data, labels,batch=5,epoch=10)
     '''
-    coverage=100
+    coverage=30
     batch = data.__len__()
-
 
     print 'start sampling'
     change=10000
@@ -138,9 +152,15 @@ def sampling(file='',cNumber=5, saveModel= False):
             predicts.append(models[m].predict(data))
         predicts=np.transpose(predicts)[0]
         print np.shape(predicts)
+        sta=[ np.argmax(i) for i in predicts]
+        counter=Counter(sta)
         for (i,v) in enumerate(predicts):
             s=sum(v)
-            l=np.argmax(np.random.multinomial(n=1,pvals=[k/s for k in v]))
+            param=[k/s for k in v]
+            param=[ (k+10.0/(counter[p]+1))   for (p,k) in enumerate(param)]
+            s = sum(param)
+            param = [k / s for k in param]
+            l=np.argmax(np.random.multinomial(n=1,pvals=param))
             #l = np.argmax(v)
             if labels[i]!=l:
                 change+=1
@@ -153,7 +173,7 @@ def sampling(file='',cNumber=5, saveModel= False):
         f.write(str(change)+'\n')
         f.close()
         if change<coverage: break
-        updateNeuralNets(models,data,labels,batch=5, epoch=10)
+        updateNeuralNets(models,data,labels,batch=5, epoch=5)
     if saveModel==True:
         for i in models:
             models[i].save(filepath=('../output/model'+str(i)),overwrite=True)
@@ -161,5 +181,5 @@ def sampling(file='',cNumber=5, saveModel= False):
 
 
 
-labels=sampling(cNumber=30)
+labels=sampling(cNumber=20)
 saveLabels(labels,'../output/predict_labels')
