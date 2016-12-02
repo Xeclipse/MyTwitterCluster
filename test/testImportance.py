@@ -73,7 +73,7 @@ model.compile(loss='categorical_crossentropy',
               metrics=['categorical_accuracy'])
 #early_stopping = EarlyStopping(monitor='val_loss', patience=0.000002)
 
-model.fit(x=[X_train,X_train], y=Y_train, batch_size=5, nb_epoch=50)
+model.fit(x=[X_train,X_train], y=Y_train, batch_size=5, nb_epoch=100)
 
 
 
