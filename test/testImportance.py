@@ -10,6 +10,7 @@ from keras.constraints import maxnorm, nonneg
 from keras.callbacks import EarlyStopping
 from keras import backend as K
 from keras.layers.core import Lambda
+from keras.utils.visualize_util import plot
 
 
 def readEmbedding(file='../resource/fsd/FSD_LSTM_embedding'):
@@ -55,9 +56,9 @@ Y_train=labels
 
 weights=readEmbedding()
 
-leftmodel = Sequential()
+leftmodel = Sequential(name='Embedding')
 leftmodel.add(Embedding(input_length=maxlen,input_dim=vocabSize, output_dim=50, mask_zero= True, name='embedding',weights=weights, trainable=False))
-rightmodel=Sequential()
+rightmodel=Sequential(name='Importance')
 rightmodel.add(Embedding(input_length=maxlen,input_dim=vocabSize, output_dim=1, mask_zero= True, name='importance', trainable=True, W_constraint=nonneg()))
 
 #merged=Merge([leftmodel,rightmodel], mode=(lambda x: x[0]*K.repeat_elements(x[1],50,2)),  name='merge_0')
@@ -72,6 +73,7 @@ model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop',
               metrics=['categorical_accuracy'])
 #early_stopping = EarlyStopping(monitor='val_loss', patience=0.000002)
+plot(model, to_file='importance_model.png')
 
 model.fit(x=[X_train,X_train], y=Y_train, batch_size=5, nb_epoch=100)
 
