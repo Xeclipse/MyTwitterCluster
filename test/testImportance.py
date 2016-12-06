@@ -61,8 +61,7 @@ leftmodel.add(Embedding(input_length=maxlen,input_dim=vocabSize, output_dim=50, 
 rightmodel=Sequential(name='Importance')
 rightmodel.add(Embedding(input_length=maxlen,input_dim=vocabSize, output_dim=1, mask_zero= True, name='importance', trainable=True, W_constraint=nonneg()))
 
-#merged=Merge([leftmodel,rightmodel], mode=(lambda x: x[0]*K.repeat_elements(x[1],50,2)),  name='merge_0')
-#merged=Lambda(Lambda(function=(lambda x: x[0]*K.repeat_elements(x[1],50,2)),output_shape=(None,29,50)))
+
 model=Sequential()
 model.add(Merge([leftmodel,rightmodel], mode=(lambda x: x[0]*K.repeat_elements(x[1],50,2)) , output_shape=(maxlen,50), name='merge'))
 model.add(LSTM(output_dim=100, input_length=maxlen, activation='tanh', inner_activation='hard_sigmoid',return_sequences=False,name='lstm'))
@@ -75,7 +74,7 @@ model.compile(loss='categorical_crossentropy',
 #early_stopping = EarlyStopping(monitor='val_loss', patience=0.000002)
 plot(model, to_file='importance_model.png')
 
-model.fit(x=[X_train,X_train], y=Y_train, batch_size=5, nb_epoch=100)
+model.fit(x=[X_train,X_train], y=Y_train, batch_size=5, nb_epoch=50)
 
 
 
