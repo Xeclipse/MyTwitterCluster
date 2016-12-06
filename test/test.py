@@ -6,7 +6,7 @@ cou=Counter(a)
 print cou[1]
 '''
 
-file=open('../output/FSD_Importance')
+file=open('../output/FSD_Importance_Dic')
 tmp=[(i.strip().split(':')) for i in file.readlines()]
 file.close()
 for i in tmp:

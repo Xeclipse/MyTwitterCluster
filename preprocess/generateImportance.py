@@ -10,7 +10,6 @@ from keras.constraints import maxnorm, nonneg
 from keras.callbacks import EarlyStopping
 from keras import backend as K
 from keras.layers.core import Lambda
-from keras.utils.visualize_util import plot
 
 
 def readEmbedding(file='../resource/fsd/FSD_LSTM_embedding'):
@@ -72,7 +71,6 @@ model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop',
               metrics=['categorical_accuracy'])
 #early_stopping = EarlyStopping(monitor='val_loss', patience=0.000002)
-plot(model, to_file='importance_model.png')
 
 model.fit(x=[X_train,X_train], y=Y_train, batch_size=5, nb_epoch=50)
 

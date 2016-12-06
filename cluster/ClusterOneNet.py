@@ -60,8 +60,10 @@ while changes>1:
         if ttmpLabel[i]!=tmpLabel[i]:
             changes+=1
     st=set(ttmpLabel)
+    print '========================================'
     print st
     print st.__len__()
+    print '========================================'
     changeFile.write(str(changes)+'\n')
     changeFile.flush()
     tmpLabel=ttmpLabel
