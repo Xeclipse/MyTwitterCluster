@@ -40,9 +40,11 @@ tmp=[int(i)-1 for i in file.readlines()]
 labelLen=max(tmp)+1
 print labelLen
 
-tmpLabel=[random.randint(0,labelLen-1) for i in range(0,2499)]
+hyper=30
+
+tmpLabel=[random.randint(0,hyper-1) for i in range(0,2499)]
 X_train=data
-Y_train=dp.prepLabel(tmpLabel,labelLen)
+Y_train=dp.prepLabel(tmpLabel,hyper)
 
 
 weights=readEmbedding()
@@ -57,7 +59,7 @@ rightmodel.add(Embedding(input_length=maxlen,input_dim=vocabSize, output_dim=1, 
 model=Sequential()
 model.add(Merge([leftmodel,rightmodel], mode=(lambda x: x[0]*K.repeat_elements(x[1],50,2)) , output_shape=(maxlen,50), name='merge'))
 model.add(LSTM(output_dim=100, input_length=maxlen, activation='tanh', inner_activation='hard_sigmoid',return_sequences=False,name='lstm'))
-model.add(Dense(labelLen))
+model.add(Dense(hyper))
 model.add(Activation('sigmoid'))
 
 model.compile(loss='categorical_crossentropy',
@@ -87,5 +89,5 @@ while changes>1:
     changeFile.write(str(changes)+'\n')
     changeFile.flush()
     tmpLabel=ttmpLabel
-    Y_train=dp.prepLabel(tmpLabel,labelLen)
+    Y_train=dp.prepLabel(tmpLabel,hyper)
 changeFile.close()

@@ -12,21 +12,33 @@ file=open(predictLabelsFile)
 plabels=[int(i) for i in file.readline().strip().split(',')]
 file.close()
 cluster=[]
-for i in range(27):
+for i in range(30):
     cluster.append([])
 for i in range(labels.__len__()):
     cluster[plabels[i]].append(labels[i])
 
-
-
-t=[]
+sta=[]
 for i in cluster:
     if i.__len__()==0: continue
     c=Counter(i)
     x=c.keys()
     y=c.values()
-
-    t.append( x[np.argmax(y)])
+    sta.append(c)
     #plt.pie(y)
     #plt.show()
-print set(t).__len__()
+
+maxNumId=[]
+purity=[]
+for c in sta:
+    x = c.keys()
+    y = c.values()
+    bigId=np.argmax(y)
+    maxNumId.append(x[bigId])
+    purity.append(float(y[bigId])/sum(y))
+
+
+print maxNumId
+print purity
+print np.mean(purity)
+plt.bar(left=[0.1+i*(0.5+0.1) for i in range(purity.__len__())],width=0.5, height=purity)
+plt.show()
