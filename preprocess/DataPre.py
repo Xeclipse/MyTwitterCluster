@@ -30,10 +30,10 @@ def dataText2Seq(fileName="../resource/fsd/pure_tweets_fsd", nb=1900):
 
 
 
-def prepLabel(tmp,labelLen):
+def prepLabel(tmp,LabelNum):
     labels=[]
     for i in tmp:
-        k=[0]*labelLen
+        k=[0]*LabelNum
         k[i]=1
         labels.append(k)
     return labels
