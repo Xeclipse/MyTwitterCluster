@@ -94,7 +94,7 @@ plt.show()
 '''
 
 #want to stream data, but it's not work
-
+'''
 eachIterRound=20
 tmpTrain=[]
 tmpLabelM=[]
@@ -106,10 +106,11 @@ tmpTrain.append(X_train[40])
 tmpTrain.append(X_train[60])
 TrainData=np.asanyarray(tmpTrain)
 tmpLabelM=dp.prepLabel(tmpLabels,clusters)
-model.fit(TrainData, tmpLabelM, batch_size=1, nb_epoch=500,verbose=1)
+model.fit(TrainData, tmpLabelM, batch_size=1, nb_epoch=1000,verbose=1)
 #threhold=0.8
 count=1
 #batch=5 # each time i will add batch number data into dataset
+np.random.shuffle(X_train)
 for i in range(0,X_train.__len__()):
     print i,
     tmpLabelM = dp.prepLabel(tmpLabels, clusters)
@@ -141,13 +142,13 @@ for i in range(0,X_train.__len__()):
 
 predict=model.predict(X_train)
 col=[ np.argmax(i)  for i in predict]
-
+'''
 
 #iterative
-'''
-changes=1000
-while changes>1:
-    model.fit(x=X_train, y=Y_train, batch_size=10, nb_epoch=10)
+
+round=10
+np.random.shuffle(X_train)
+while round>0:
     tmpAns=model.predict(X_train)
     ttmpLabel=[np.argmax(i) for i in tmpAns]
     changes=0
@@ -162,7 +163,9 @@ while changes>1:
     tmpLabel=ttmpLabel
     col=tmpLabel
     Y_train=dp.prepLabel(tmpLabel,clusters)
-'''
+    model.fit(x=X_train, y=Y_train, batch_size=10, nb_epoch=10)
+    round-=1
+
 plt.scatter(data[:,0],data[:,1],c=col)
 plt.hold()
 plt.show()
