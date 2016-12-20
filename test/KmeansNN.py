@@ -60,27 +60,8 @@ plt.show()
 
 
 def LossFunction(x):
-    dat=tf.reshape(x[0],[sampleSize,dim])
-    label=tf.reshape(x[1],[sampleSize,alpha])
-    minus1=tf.reshape(x[2],[sampleSize,1])
+    loss=tf.sub(x[1],x[2])
 
-    mu=tf.transpose(tf.matmul(tf.scalar_mul(1.0/sampleSize,dat),label,transpose_a=True))
-    loss=dat-(tf.matmul(label,mu))
-    loss=tf.trace(tf.matmul(tf.scalar_mul(1.0/sampleSize,loss),loss,transpose_b=True))
-
-    norm = tf.reduce_sum(label, 1,keep_dims=True)
-    norm = tf.scalar_mul(1,tf.add(norm, minus1))
-    norm = tf.matmul(norm,norm,transpose_a=True)
-    loss= tf.add(loss,norm)
-
-    '''
-    dat = tf.reshape(x[0], [sampleSize, dim])
-    label = tf.reshape(x[1], [sampleSize, alpha])
-    loss=tf.matmul(tf.matmul(label,tf.transpose(label)),dat)-dat
-    loss = tf.matmul(loss, tf.transpose(loss))
-    loss=tf.trace(loss)
-    '''
-    loss=tf.reshape(loss,(1,1))
     return loss
 
 
