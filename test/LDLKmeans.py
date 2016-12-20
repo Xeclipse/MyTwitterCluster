@@ -37,7 +37,7 @@ for i in range(clusters):
         data=np.concatenate( (data, np.random.multivariate_normal(dataCentre[i],np.eye(dim)*2,clusterNum)), axis=0 )
     labels.extend([[0]*i+[1]+[0]*(clusters-1-i)]*clusterNum)
 X_train=data
-
+np.random.shuffle(X_train)
 #init random labels
 tmpLabel=[random.randint(0,clusters-1) for i in range(clusters*clusterNum)]
 Y_train=dp.prepLabel(tmpLabel,clusters)
@@ -63,14 +63,18 @@ def LossFunction(x):
     dat=tf.reshape(x[0],[sampleSize,dim])
     label=tf.reshape(x[1],[sampleSize,alpha])
     minus1=tf.reshape(x[2],[sampleSize,1])
+    allOne=tf.div(dat,dat)
 
-    mu=tf.transpose(tf.matmul(tf.scalar_mul(1.0/sampleSize,dat),label,transpose_a=True))
+
+    a=tf.matmul(label,dat,transpose_a=True)
+    b=tf.matmul(label,allOne,transpose_a=True)
+    mu=tf.div(a,b)
     loss=dat-(tf.matmul(label,mu))
     loss=tf.trace(tf.matmul(tf.scalar_mul(1.0/sampleSize,loss),loss,transpose_b=True))
 
 
     norm = tf.reduce_sum(label, 1, keep_dims=True)
-    norm = tf.scalar_mul( 1000.0, tf.add(norm, minus1))
+    norm = tf.scalar_mul( 10.0, tf.add(norm, minus1))
     norm = tf.matmul(norm,norm,transpose_a=True)
     loss= tf.add(loss,norm)
 
@@ -78,13 +82,6 @@ def LossFunction(x):
     return loss
 
 
-p=[0.1,0.2,0.3,0.4]
-weights=[]
-for i in range(sampleSize):
-    weights.append(p[:])
-weights=np.asanyarray([weights])
-center=np.dot(np.transpose(weights[0]),X_train)
-print center
 #cluster network
 labelID=Input(batch_shape=(1,sampleSize))
 labelEmbedding=Embedding(input_dim=sampleSize,  input_length=sampleSize, output_dim=alpha,W_constraint=kc.nonneg() ,name='embedding')(labelID)
@@ -93,7 +90,7 @@ minus1Input=Input(batch_shape=(1,sampleSize))
 #rawInput=Dense(input_dim=sampleSize*dim , output_dim=sampleSize* dim, weights=np.eye(sampleSize*dim),activation='linear', trainable=False)(rawInput)
 out=merge(inputs=[rawInput,labelEmbedding,minus1Input], mode= LossFunction, output_shape=(1,1))
 model=Model(input=[rawInput,labelID,minus1Input],output=out)
-model.compile(optimizer='Adam',
+model.compile(optimizer='RMSprop',
               loss='mse',
               metrics=['mse'])
 
@@ -103,13 +100,16 @@ X=X_train.reshape((1,sampleSize*dim))
 X2=np.asanyarray(range(X_train.__len__())).reshape(1,sampleSize)
 X3=np.asanyarray([-1.0]*sampleSize).reshape(1,sampleSize)
 target=np.asanyarray([[[0.0]]])
-model.fit(x=[X,X2,X3], y=target ,batch_size=1,nb_epoch=20000,verbose=0)
+model.fit(x=[X,X2,X3], y=target ,batch_size=1,nb_epoch=2000,verbose=1)
 
 
 embeddings = model.get_layer(name='embedding').get_weights()[0]
-center=np.dot(np.transpose(embeddings),X_train)/sampleSize
+
+#center
+a=np.dot(np.transpose(embeddings),X_train)
+b=np.dot(np.transpose(embeddings),np.asanyarray([[1.0]*dim]*sampleSize))
+center=np.divide(a,b)
 print center
-print embeddings
 col=[np.argmax(i) for i in embeddings]
 print col
 plt.scatter(data[:,0],data[:,1],c=col)
