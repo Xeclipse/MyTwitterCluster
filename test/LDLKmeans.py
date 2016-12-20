@@ -10,7 +10,7 @@ import random
 import keras.constraints as kc
 import keras.backend as K
 import tensorflow as tf
-
+from keras.regularizers import l1
 
 #Loss= sum_i^N( sum_k^K (|| x_i - y_ik ＊ mu_k  ||_2/ || x_i ||2) )
 #mu_k= sum_i^N( x_i * y_ik )/N
@@ -23,7 +23,7 @@ alpha=clusters
 
 #generate data centers
 dataCentre=np.random.multivariate_normal([0]*dim , np.eye(dim),clusters)
-dataCentre= dataCentre.__mul__([4]*dim)
+dataCentre= dataCentre.__mul__([10]*dim)
 
 
 
@@ -68,32 +68,32 @@ def LossFunction(x):
     loss=dat-(tf.matmul(label,mu))
     loss=tf.trace(tf.matmul(tf.scalar_mul(1.0/sampleSize,loss),loss,transpose_b=True))
 
-    norm = tf.reduce_sum(label, 1,keep_dims=True)
-    norm = tf.scalar_mul(1,tf.add(norm, minus1))
+
+    norm = tf.reduce_sum(label, 1, keep_dims=True)
+    norm = tf.scalar_mul( 1000.0, tf.add(norm, minus1))
     norm = tf.matmul(norm,norm,transpose_a=True)
     loss= tf.add(loss,norm)
 
-    '''
-    dat = tf.reshape(x[0], [sampleSize, dim])
-    label = tf.reshape(x[1], [sampleSize, alpha])
-    loss=tf.matmul(tf.matmul(label,tf.transpose(label)),dat)-dat
-    loss = tf.matmul(loss, tf.transpose(loss))
-    loss=tf.trace(loss)
-    '''
     loss=tf.reshape(loss,(1,1))
     return loss
 
 
+p=[0.1,0.2,0.3,0.4]
+weights=[]
+for i in range(sampleSize):
+    weights.append(p[:])
+weights=np.asanyarray([weights])
+center=np.dot(np.transpose(weights[0]),X_train)
+print center
 #cluster network
-
 labelID=Input(batch_shape=(1,sampleSize))
-labelEmbedding=Embedding(input_dim=sampleSize,  input_length=sampleSize, output_dim=alpha, weights=np.asanyarray([[[0.25]*4]*80]),name='embedding')(labelID)
+labelEmbedding=Embedding(input_dim=sampleSize,  input_length=sampleSize, output_dim=alpha,W_constraint=kc.nonneg() ,name='embedding')(labelID)
 rawInput=Input(batch_shape=(1,sampleSize*dim))
 minus1Input=Input(batch_shape=(1,sampleSize))
 #rawInput=Dense(input_dim=sampleSize*dim , output_dim=sampleSize* dim, weights=np.eye(sampleSize*dim),activation='linear', trainable=False)(rawInput)
 out=merge(inputs=[rawInput,labelEmbedding,minus1Input], mode= LossFunction, output_shape=(1,1))
 model=Model(input=[rawInput,labelID,minus1Input],output=out)
-model.compile(optimizer='sgd',
+model.compile(optimizer='Adam',
               loss='mse',
               metrics=['mse'])
 
@@ -103,13 +103,16 @@ X=X_train.reshape((1,sampleSize*dim))
 X2=np.asanyarray(range(X_train.__len__())).reshape(1,sampleSize)
 X3=np.asanyarray([-1.0]*sampleSize).reshape(1,sampleSize)
 target=np.asanyarray([[[0.0]]])
-model.fit(x=[X,X2,X3], y=target ,batch_size=1,nb_epoch=100)
+model.fit(x=[X,X2,X3], y=target ,batch_size=1,nb_epoch=20000,verbose=0)
 
 
 embeddings = model.get_layer(name='embedding').get_weights()[0]
+center=np.dot(np.transpose(embeddings),X_train)/sampleSize
+print center
 print embeddings
 col=[np.argmax(i) for i in embeddings]
-
+print col
 plt.scatter(data[:,0],data[:,1],c=col)
+plt.scatter(center[:,0],center[:,1],c=['r','r','r','r'])
 plt.hold()
 plt.show()
