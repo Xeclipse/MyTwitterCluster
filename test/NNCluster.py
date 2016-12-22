@@ -57,22 +57,24 @@ plt.show()
 #Loss= sum_i^N( sum_k^K (|| x_i - y_ik ＊ mu_k  ||_2/ || x_i ||2) )
 #mu_k= sum_i^N( x_i * y_ik )/N
 
-all1_K1 =tf.reshape(tf.constant([1.0]*alpha),[alpha,1])#K*1
-simple_11=tf.reshape(tf.constant([1.0]),[1,1])
+all1_K1 =tf.constant([1.0]*alpha)#K*1
+simple_11=tf.constant([1.0])
 
 def LossFunction(x):
-    dat=x[0]#1*D
+    dat=tf.reshape(x[0],[1,dim])#1*D
     mu=x[1]#K*D
-    E=tf.matmul(all1_K1,dat)
+    a1=tf.reshape(all1_K1,[alpha,1])
+    s1=tf.reshape(simple_11,[1,1])
+    E=tf.matmul(a1,dat)
     S=tf.sub(dat,E)
     loss=tf.trace(tf.matmul(S,S,transpose_b=True))
     loss=tf.add(loss,simple_11)
-    loss=tf.sub(simple_11,loss)
+    loss=tf.sub(s1,loss)
     return loss
 
 
 #cluster network
-center=Input(shape=(1,alpha))
+center=Input(shape=(None,alpha))
 center=Embedding(input_dim=alpha,  input_length=alpha, output_dim=dim,name='Center')(center)
 rawInput=Input(shape=(1,dim))
 #rawInput=Dense(input_dim=sampleSize*dim , output_dim=sampleSize* dim, weights=np.eye(sampleSize*dim),activation='linear', trainable=False)(rawInput)
