@@ -11,6 +11,9 @@ import keras.constraints as kc
 import keras.backend as K
 import tensorflow as tf
 from keras.regularizers import l1
+from keras.optimizers  import RMSprop
+
+
 
 #Loss= sum_i^N( sum_k^K (|| x_i - y_ik ＊ mu_k  ||_2/ || x_i ||2) )
 #mu_k= sum_i^N( x_i * y_ik )/N
@@ -37,11 +40,8 @@ for i in range(clusters):
         data=np.concatenate( (data, np.random.multivariate_normal(dataCentre[i],np.eye(dim)*4,clusterNum)), axis=0 )
     labels.extend([[0]*i+[1]+[0]*(clusters-1-i)]*clusterNum)
 X_train=data
-np.random.shuffle(X_train)
-#init random labels
-tmpLabel=[random.randint(0,clusters-1) for i in range(clusters*clusterNum)]
-Y_train=dp.prepLabel(tmpLabel,clusters)
-
+#np.random.shuffle(X_train)
+labels=[np.argmax(i) for i in labels]
 
 #paint data
 '''
@@ -54,45 +54,48 @@ plt.hold()
 plt.show()
 '''
 
-#Loss= sum_i^N( sum_k^K (|| x_i - y_ik ＊ mu_k  ||_2/ || x_i ||2) )
-#mu_k= sum_i^N( x_i * y_ik )/N
+#Loss= sum_i^N( 1/ sum_k^K (|| x_i - mu_k  ||_2+1) )
 
 all1_K1 =tf.constant([1.0]*alpha)#K*1
 simple_11=tf.constant([1.0])
 
 def LossFunction(x):
     dat=tf.reshape(x[0],[1,dim])#1*D
-    mu=x[1]#K*D
+    mu=tf.reshape(x[1],[alpha,dim])#K*D
     a1=tf.reshape(all1_K1,[alpha,1])
-    s1=tf.reshape(simple_11,[1,1])
     E=tf.matmul(a1,dat)
-    S=tf.sub(dat,E)
-    loss=tf.trace(tf.matmul(S,S,transpose_b=True))
-    loss=tf.add(loss,simple_11)
-    loss=tf.sub(s1,loss)
+    S=tf.sub(mu,E)
+    loss=tf.diag_part(tf.matmul(S,S,transpose_b=True))
+    loss=tf.reduce_min(loss)
     return loss
 
-
+opt=RMSprop(lr=0.1, rho=0.9, epsilon=1e-08, decay=0.0)
 #cluster network
-center=Input(shape=(None,alpha))
-center=Embedding(input_dim=alpha,  input_length=alpha, output_dim=dim,name='Center')(center)
-rawInput=Input(shape=(1,dim))
+centerIn=Input(shape=(alpha,))
+center=Embedding(input_dim=alpha,  input_length=alpha ,output_dim=dim,name='Center')(centerIn)
+rawInput=Input(shape=(dim,))
 #rawInput=Dense(input_dim=sampleSize*dim , output_dim=sampleSize* dim, weights=np.eye(sampleSize*dim),activation='linear', trainable=False)(rawInput)
 out=merge(inputs=[rawInput,center], mode= LossFunction, output_shape=(1,1))
-model=Model(input=[rawInput,center],output=out)
-model.compile(optimizer='RMSprop',
+model=Model(input=[rawInput,centerIn],output=out)
+model.compile(optimizer=opt,
               loss='mse',
               metrics=['mse'])
 
 
 X2=np.asanyarray(range(alpha)*sampleSize).reshape(sampleSize,alpha)
-target=np.asanyarray([[[0.0]]])
-model.fit(x=[X_train,X2], y=target ,batch_size=1,nb_epoch=10000,verbose=1)
+target=np.asanyarray([[[0.0]]]*sampleSize)
+model.fit(x=[X_train,X2], y=target ,batch_size=1,nb_epoch=100,verbose=1)
 
 
+
+center = model.get_layer(name='Center').get_weights()[0]
+print center
+
+plt.scatter(data[:,0],data[:,1],c=labels)
+plt.scatter(center[:,0],center[:,1],c=['r','r','r','r'])
+plt.hold()
+plt.show()
 '''
-embeddings = model.get_layer(name='embedding').get_weights()[0]
-
 #center
 a=np.dot(np.transpose(embeddings),X_train)
 b=np.dot(np.transpose(embeddings),np.asanyarray([[1.0]*dim]*sampleSize))
