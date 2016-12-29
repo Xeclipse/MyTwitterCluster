@@ -29,7 +29,7 @@ def dataText2Seq(fileName="../resource/fsd/pure_tweets_fsd", nb=1900):
     return data,toknizer,maxlen
 
 
-
+#trans label from 1 dim to k dim, bag of label :)
 def prepLabel(tmp,LabelNum):
     labels=[]
     for i in tmp:

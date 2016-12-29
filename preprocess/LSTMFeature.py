@@ -7,10 +7,15 @@ import numpy as np
 import keras.preprocessing.text as prep
 import keras.preprocessing.sequence as seq
 from keras import backend as K
+'''
+root='../../sinanewsprocess/'
+corpusFile=root+"fenci_feature.txt"
+labelsFile=root+'label.txt'
+'''
 
-
-corpusFile="../resource/blog/blogText"
-labelsFile='../resource/blog/blogLabels'
+root='../resource/song/'
+corpusFile=root+"jiebaqqsong.txt"
+labelsFile=root+'label83_train.txt'
 
 file=open(corpusFile)
 text=file.readlines()
@@ -29,11 +34,11 @@ file.close()
 
 
 file=open(labelsFile)
-labels=[[float(k) for k in i.strip().split('\t')] for i in file.readlines()]
+labels=[[float(k) for k in i.strip().split(' ')] for i in file.readlines()]
 
-X_train=data
+X_train=data[0:450]
 Y_train=labels
-
+test=data[450:500]
 
 model = Sequential()
 model.add(Embedding(input_dim=vocabSize, output_dim=100, mask_zero= True))
@@ -45,16 +50,21 @@ model.compile(loss='mse',
               optimizer='rmsprop',
               metrics=['mse'])
 
-model.fit(X_train, Y_train, batch_size=20, nb_epoch=50)
-
+model.fit(X_train, Y_train, batch_size=20, nb_epoch=150)
+get_lstm_layer_output = K.function([model.layers[0].input],
+                                  [model.get_layer(name='lstm').output])
+lstmout=get_lstm_layer_output([X_train])[0]
+file=open('feature_qqsong_train','w')
+for i in lstmout:
+    tmp=str(i).replace('\n','').replace('[','').replace(']','').strip()
+    file.write(tmp+'\n')
+file.close()
 
 
 get_lstm_layer_output = K.function([model.layers[0].input],
                                   [model.get_layer(name='lstm').output])
-
-
-lstmout=get_lstm_layer_output([X_train])[0]
-file=open('output','w')
+lstmout=get_lstm_layer_output([test])[0]
+file=open('feature_qqsong_test','w')
 for i in lstmout:
     tmp=str(i).replace('\n','').replace('[','').replace(']','').strip()
     file.write(tmp+'\n')

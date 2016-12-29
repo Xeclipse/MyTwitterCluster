@@ -15,8 +15,7 @@ from keras.optimizers  import RMSprop
 
 
 
-#Loss= sum_i^N( sum_k^K (|| x_i - y_ik ＊ mu_k  ||_2/ || x_i ||2) )
-#mu_k= sum_i^N( x_i * y_ik )/N
+#kmeans,nonsense
 
 dim=2#sample维数
 clusterNum=20#每个cluster的sample数量
@@ -69,7 +68,7 @@ def LossFunction(x):
     loss=tf.reduce_min(loss)
     return loss
 
-opt=RMSprop(lr=0.1, rho=0.9, epsilon=1e-08, decay=0.0)
+opt=RMSprop(lr=0.01, rho=0.9, epsilon=1e-08, decay=0.0)
 #cluster network
 centerIn=Input(shape=(alpha,))
 center=Embedding(input_dim=alpha,  input_length=alpha ,output_dim=dim,name='Center')(centerIn)
@@ -84,7 +83,7 @@ model.compile(optimizer=opt,
 
 X2=np.asanyarray(range(alpha)*sampleSize).reshape(sampleSize,alpha)
 target=np.asanyarray([[[0.0]]]*sampleSize)
-model.fit(x=[X_train,X2], y=target ,batch_size=1,nb_epoch=100,verbose=1)
+model.fit(x=[X_train,X2], y=target ,batch_size=1,nb_epoch=1000,verbose=1)
 
 
 

@@ -1,6 +1,10 @@
 from matplotlib import pyplot as plt
 from collections import Counter
 import numpy as np
+
+
+
+#to analysis the cluster result
 labelsFile='../resource/fsd/labels'
 predictLabelsFile='../output/predict_labels'
 file=open(labelsFile)

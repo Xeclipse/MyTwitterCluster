@@ -11,37 +11,38 @@ import keras.constraints as kc
 import keras.backend as K
 import tensorflow as tf
 from keras.regularizers import l1
+from keras.optimizers import RMSprop
 
 #Loss= sum_i^N( sum_k^K (|| x_i - y_ik ＊ mu_k  ||_2/ || x_i ||2) )
 #mu_k= sum_i^N( x_i * y_ik )/N
 
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn import cluster, datasets
+from sklearn.neighbors import kneighbors_graph
+from sklearn.preprocessing import StandardScaler
+
+np.random.seed(0)
+
+# Generate datasets. We choose the size big enough to see the scalability
+# of the algorithms, but not too big to avoid too long running times
+n_samples = 80
+noisy_circles = datasets.make_circles(n_samples=n_samples, factor=.5,
+                                      noise=.05)
+noisy_moons = datasets.make_moons(n_samples=n_samples, noise=.05)
+X_train,label=noisy_moons
+X_train=X_train*10
+plt.scatter(X_train[:,0],X_train[:,1])
+plt.show()
+
+
+
 dim=2#sample维数
-clusterNum=20#每个cluster的sample数量
-clusters=4#cluster的数量
-sampleSize=clusterNum*clusters
+clusters=2#cluster的数量
+sampleSize=n_samples
 alpha=clusters
-
-#generate data centers
-dataCentre=np.random.multivariate_normal([0]*dim , np.eye(dim),clusters)
-dataCentre= dataCentre.__mul__([10]*dim)
-
-
-
-#generate data
-labels=[]
-data=None
-for i in range(clusters):
-    if data is None:
-        data =np.random.multivariate_normal(dataCentre[i],np.eye(dim),clusterNum)
-    else:
-        data=np.concatenate( (data, np.random.multivariate_normal(dataCentre[i],np.eye(dim)*4,clusterNum)), axis=0 )
-    labels.extend([[0]*i+[1]+[0]*(clusters-1-i)]*clusterNum)
-X_train=data
-np.random.shuffle(X_train)
-#init random labels
-tmpLabel=[random.randint(0,clusters-1) for i in range(clusters*clusterNum)]
-Y_train=dp.prepLabel(tmpLabel,clusters)
-
 
 #paint data
 '''
@@ -74,14 +75,14 @@ def LossFunction(x):
 
 
     norm = tf.reduce_sum(label, 1, keep_dims=True)
-    norm = tf.scalar_mul( 10.0, tf.add(norm, minus1))
+    norm = tf.scalar_mul( 100.0, tf.add(norm, minus1))
     norm = tf.matmul(norm,norm,transpose_a=True)
     loss= tf.add(loss,norm)
 
     loss=tf.reshape(loss,(1,1))
     return loss
 
-
+opt=RMSprop(lr=0.01, rho=0.5, epsilon=1e-08, decay=0.0)
 #cluster network
 labelID=Input(batch_shape=(1,sampleSize))
 labelEmbedding=Embedding(input_dim=sampleSize,  input_length=sampleSize, output_dim=alpha,W_constraint=kc.nonneg() ,name='embedding')(labelID)
@@ -90,7 +91,7 @@ minus1Input=Input(batch_shape=(1,sampleSize))
 #rawInput=Dense(input_dim=sampleSize*dim , output_dim=sampleSize* dim, weights=np.eye(sampleSize*dim),activation='linear', trainable=False)(rawInput)
 out=merge(inputs=[rawInput,labelEmbedding,minus1Input], mode= LossFunction, output_shape=(1,1))
 model=Model(input=[rawInput,labelID,minus1Input],output=out)
-model.compile(optimizer='RMSprop',
+model.compile(optimizer=opt,
               loss='mse',
               metrics=['mse'])
 
@@ -100,7 +101,7 @@ X=X_train.reshape((1,sampleSize*dim))
 X2=np.asanyarray(range(X_train.__len__())).reshape(1,sampleSize)
 X3=np.asanyarray([-1.0]*sampleSize).reshape(1,sampleSize)
 target=np.asanyarray([[[0.0]]])
-model.fit(x=[X,X2,X3], y=target ,batch_size=1,nb_epoch=10000,verbose=1)
+model.fit(x=[X,X2,X3], y=target ,batch_size=10,nb_epoch=10000,verbose=1)
 
 
 embeddings = model.get_layer(name='embedding').get_weights()[0]
@@ -112,7 +113,7 @@ center=np.divide(a,b)
 print center
 col=[np.argmax(i) for i in embeddings]
 print col
-plt.scatter(data[:,0],data[:,1],c=col)
+plt.scatter(X_train[:,0],X_train[:,1],c=col)
 plt.scatter(center[:,0],center[:,1],c=['r','r','r','r'])
 plt.hold()
 plt.show()
