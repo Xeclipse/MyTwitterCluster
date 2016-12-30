@@ -64,6 +64,3 @@ for i in range(words.__len__()):
     dicW[words[i]]=wordsv[i]
 
 dis, w=mostSimilar(words[3],dicW)
-print words[3]
-print dis
-print w
