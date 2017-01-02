@@ -21,7 +21,7 @@ def readEmbedding(file='../resource/fsd/FSD_LSTM_embedding'):
     return np.asanyarray([embedding])
 
 
-corpusFile="../resource/fsd/pure_tweets_fsd"
+corpusFile="../resource/fsd/processed_tweets_fsd"
 labelsFile='../resource/fsd/labels'
 
 file=open(corpusFile)

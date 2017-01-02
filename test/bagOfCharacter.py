@@ -27,6 +27,8 @@ def bagofword(word):
 
 #print bagofword('hello')
 
+
+#filter useless words
 def process(line):
     ret=''
     for i in line.strip().split():
@@ -36,23 +38,20 @@ def process(line):
             ret+=i+' '
     return ret+'\n'
 
+def cmpFloatTuple(x,y):
+    return int(x[1]<y[1])
+
 def mostSimilar(w,dicW):
-    sim=0
+    sim=[]
     wv=dicW[w]
-    word=''
     for i in dicW:
-        dis=0
-        if i!=w:
-            dis=cosine_similarity(wv,dicW[i])
-        if dis>sim:
-            sim=dis
-            word=i
-    return sim, word
+        sim.append((i,cosine_similarity(wv,dicW[i])[0][0]))
+    sim= sorted(sim,key=lambda x:x[1], reverse=True)
+    return sim
 
 
 file = open(corpusFile)
-text = [process(i) for i in file.readlines()]
-print text
+text = file.readlines()
 file.close()
 toknizer = prep.Tokenizer()
 toknizer.fit_on_texts(texts=text)
@@ -62,5 +61,5 @@ wordsv=[bagofword(i) for i in words]
 dicW={}
 for i in range(words.__len__()):
     dicW[words[i]]=wordsv[i]
-
-dis, w=mostSimilar(words[3],dicW)
+k= mostSimilar(words[10],dicW)
+print k

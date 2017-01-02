@@ -10,8 +10,8 @@ from keras.callbacks import EarlyStopping
 from keras import backend as K
 
 
-corpusFile="../resource/pure_tweets_fsd"
-labelsFile='../resource/labels'
+corpusFile="../resource/fsd/processed_tweets_fsd"
+labelsFile='../resource/fsd/labels'
 
 file=open(corpusFile)
 text= [i.strip() for i in file.readlines()]
