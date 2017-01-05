@@ -70,25 +70,31 @@ model.add(Activation('sigmoid'))
 model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop',
               metrics=['categorical_accuracy'])
-#early_stopping = EarlyStopping(monitor='val_loss', patience=0.000002)
+early_stopping = EarlyStopping(monitor='val_loss', patience=0.001)
 
-model.fit(x=[X_train,X_train], y=Y_train, batch_size=5, nb_epoch=50)
+model.fit(x=[X_train,X_train], y=Y_train, batch_size=10, nb_epoch=50)
 
 
 
 importance = rightmodel.get_layer(name='importance').get_weights()[0]
-file=open('../output/FSD_Importance_Dic','w')
+file=open('../output/FSD_Importance','w')
+
+tmp=[]
 for i in worddic:
-    tmp=tmp=str(i)+':'+str(importance[worddic[i]]).replace('\n','').replace('[','').replace(']','').strip()
-    file.write(tmp+'\n')
+    tmp.append((i,importance[worddic[i]][0]))
+tmp=sorted(tmp,key=lambda x:x[1],reverse=True)
+
+for i in tmp:
+    file.write(str(i[0])+'\t'+str(i[1])+'\n')
 file.close()
 
-file=open('../resource/FSD_Importance','w')
+'''
+file=open('../resource/fsd/FSD_Importance','w')
 for i in importance:
     tmp=str(i)
     file.write(tmp+'\n')
 file.close()
-
+'''
 '''
 embeddings = model.get_layer(name='embedding').get_weights()[0]
 file=open('../resource/FSD_LSTM_embedding','w')
