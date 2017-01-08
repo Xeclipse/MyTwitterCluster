@@ -22,7 +22,7 @@ def bagofword(word):
     v=[0]*256
     for i in word:
         if ord(i)<256:
-            v[ord(i)]+=1
+            v[ord(i)]+=10
     return v
 
 #print bagofword('hello')
@@ -61,5 +61,5 @@ wordsv=[bagofword(i) for i in words]
 dicW={}
 for i in range(words.__len__()):
     dicW[words[i]]=wordsv[i]
-k= mostSimilar(words[10],dicW)
+k= mostSimilar(words[0],dicW)
 print k
