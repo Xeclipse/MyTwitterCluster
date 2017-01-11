@@ -43,7 +43,7 @@ Y_train=labels
 
 
 model = Sequential()
-model.add(Embedding(input_dim=vocabSize, output_dim=50, mask_zero= True, name='embedding'))#from keras.callbacks import EarlyStopping
+model.add(Embedding(input_dim=vocabSize, output_dim=50, mask_zero= True, name='embedding'))
 model.add(LSTM(output_dim=100, input_length=maxlen,activation='tanh', inner_activation='hard_sigmoid',return_sequences=False,name='lstm'))
 model.add(Dense(labels[0].__len__()))
 model.add(Activation('sigmoid'))
@@ -51,10 +51,9 @@ model.add(Activation('sigmoid'))
 model.compile(loss='mse',
               optimizer='rmsprop',
               metrics=['mse'])
-#early_stopping = EarlyStopping(monitor='val_loss', patience=0.000002)
+#early_stopping = EarlyStopping(monitor='val_loss', patience=0.001)
 
 model.fit(X_train, Y_train, batch_size=5, nb_epoch=100)
-
 embeddings = model.get_layer(name='embedding').get_weights()[0]
 
 file=open('../resource/FSD_LSTM_embedding','w')

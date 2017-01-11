@@ -79,12 +79,12 @@ model.fit(x=[X_train,X_train], y=Y_train, batch_size=10, nb_epoch=50)
 importance = rightmodel.get_layer(name='importance').get_weights()[0]
 file=open('../output/FSD_Importance','w')
 
-tmp=[]
+sortedImp=[]
 for i in worddic:
-    tmp.append((i,importance[worddic[i]][0]))
-tmp=sorted(tmp,key=lambda x:x[1],reverse=True)
+    sortedImp.append((i,importance[worddic[i]][0]))
+sortedImp=sorted(sortedImp,key=lambda x:x[1],reverse=True)
 
-for i in tmp:
+for i in sortedImp:
     file.write(str(i[0])+'\t'+str(i[1])+'\n')
 file.close()
 

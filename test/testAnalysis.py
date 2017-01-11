@@ -5,15 +5,15 @@ import numpy as np
 
 
 #to analysis the cluster result
-labelsFile='../resource/fsd/labels'
-predictLabelsFile='../output/predict_labels'
+labelsFile='../resource/toySet/label'
+predictLabelsFile='../resource/toySet/kmeans_ans'
 file=open(labelsFile)
 labels=[int(i)-1 for i in file.readlines()]
 file.close()
 
 
 file=open(predictLabelsFile)
-plabels=[int(i) for i in file.readline().strip().split(',')]
+plabels=[int(i) for i in file.readlines()]
 file.close()
 cluster=[]
 for i in range(30):
