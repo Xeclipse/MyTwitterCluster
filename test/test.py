@@ -1,55 +1,31 @@
 #coding: utf-8
 import nltk as nk
+import keras.preprocessing.text as prep
 import preprocess.DataPre as dpp
 
-
-file=open('../resource/fsd/raw_fsd_tweets')
+'''
+file=open('../resource/fsd/fsd_ner')
 text=file.readlines()
-file.close()
-
-
-posSaveFile='../resource/fsd/fsd_pos'
-nerSaveFile=open('../resource/fsd/fsd_ner','w')
-tok=nk.TweetTokenizer(reduce_len=True, strip_handles=False)
+tok=prep.Tokenizer(lower=False)
+tok.fit_on_texts(text)
+print tok.word_counts
+l=sorted([(i,tok.word_counts[i]) for i in tok.word_counts],key=lambda x:x[1], reverse=True)
+'''
 
 '''
-sentence='Blast at French Nuclear Site Is Said to Kill 1 Person: An explosion shook a French nuclear waste site in southe... http://t.co/o5f469M'
-
-posSentences=nk.pos_tag(tok.tokenize(sentence))
-nerSentences= nk.ne_chunk(posSentences)
-print nerSentences
-for i in nerSentences:
-    if type(i) is not tuple:
-        print i._label,
-        for p in i:
-            print p[0],
-
+tok=prep.Tokenizer(nb_words=None)
+tok.fit_on_texts(text)
+data=tok.texts_to_sequences(text)
+l=sorted([(i,tok.word_index[i]) for i in tok.word_index],key=lambda x:x[1], reverse=False)
+print l
+for d in data:
+    s=''
+    for i in d:
+        if tok.word_counts[l[i][0]] > 2:
+            s+=l[i-1][0]+' '
+    s+='\n'
+    print s
 '''
-print 'tokenize tweets---->',
-tokSentences=[tok.tokenize(i) for i in text]
-print 'finish'
-print 'posTag tweets----->',
-posSentences=[nk.pos_tag(i) for i in tokSentences]
-print 'finish'
 
-print 'Save POS tweets----->',
-dpp.saveList(posSaveFile,posSentences)
-print 'finish'
+dpp.extractName()
 
-print 'NER tweets----->',
-nerSentences= [nk.ne_chunk(i) for i in posSentences]
-print 'finish'
-
-
-print 'Save NER tweets----->',
-for l in nerSentences:
-    s = ''
-    for i in l:
-        if type(i) is not tuple:
-            s+= str(i._label)+':'
-            for p in i:
-                s+=str(p[0])+'_'
-            s+='\t'
-    nerSaveFile.write(s+'\n')
-nerSaveFile.close()
-print 'finish'
